@@ -8,8 +8,8 @@
 typedef struct {
     char nome[50];
     char endereco[50];
-    char telefone[11];
-    char cpf[11];
+    char telefone[20];
+    char cpf[15];
 } TCliente;
 
 typedef struct {
@@ -34,6 +34,18 @@ typedef struct {
     TProduto produtos[MAX];
 } TAtendimento;
 
+void ptitulo(char* message) {
+    printf("\n## %s\n", message);
+}
+
+void psubtitulo(char* message) {
+    printf("\n### %s\n", message);
+}
+
+void pseparador() {
+    printf("\n----------------------------\n");
+}
+
 TCliente cliente_inicializar() {
     TCliente cliente;
 
@@ -48,20 +60,23 @@ TCliente cliente_inicializar() {
 TCliente cliente_criar() {
     TCliente cliente = cliente_inicializar();
 
+    ptitulo("Cliente");
+
     printf("Informe seu CPF:\n");
-    scanf(" %s", cliente.cpf);
+    scanf(" %11[^\n]s", cliente.cpf);
     printf("Informe seu nome:\n");
-    scanf(" %s", cliente.nome);
+    scanf(" %[^\n]s", cliente.nome);
     printf("Informe seu endereço:\n");
-    scanf(" %s", cliente.endereco);
+    scanf(" %[^\n]s", cliente.endereco);
     printf("Informe seu telefone:\n");
-    scanf(" %s", cliente.telefone);
+    scanf(" %[^\n]s", cliente.telefone);
 
     return cliente;
 }
 
 void cliente_exibir(TCliente cliente) {
-    printf("Cliente: \n");
+    ptitulo("Cliente");
+
     printf("CPF: %s\n", cliente.cpf);
     printf("Nome: %s\n", cliente.nome);
     printf("Endereço: %s\n", cliente.endereco);
@@ -81,6 +96,8 @@ TProduto produto_inicializar() {
 TProduto produto_criar() {
     TProduto produto=produto_inicializar();
 
+    ptitulo("Produto");
+
     printf("Informe o código:\n");
     scanf("%d", &produto.codigo);
     printf("Informe a descrição:\n");
@@ -92,7 +109,8 @@ TProduto produto_criar() {
 }
 
 void produto_exibir(TProduto produto) {
-    printf("Produto: \n");
+    ptitulo("Produto");
+
     printf("Código: %d\n", produto.codigo);
     printf("Descrição: %s\n", produto.descricao);
     printf("Valor: %.2f\n", produto.valor);
@@ -116,9 +134,10 @@ TProduto* lista_produtos_pesquisar_por_codigo(TListaProdutos* listaProdutos, int
 }
 
 void lista_produtos_exibir(TListaProdutos listaProdutos) {
-    printf("PRODUTOS\n");
+    ptitulo("Produtos");
+
     for (int i = 0; i < listaProdutos.fim; i++) {
-        printf("----------------------------------\n");
+        pseparador();
         produto_exibir(listaProdutos.produtos[i]);
     }
 }
@@ -150,11 +169,14 @@ int main(void) {
     TListaProdutos listaProdutos = lista_produtos_inicializar();
     srand(time(NULL)); // Seed para números pseudo-aleatórios
 
+    TCliente cliente = cliente_criar();
+    cliente_exibir(cliente);
+
     for (int i = 0; i < 5; i++) {
-        int codigo = rand() % 10 + 1;
-        TProduto produto = produto_inicializar();
-        produto.codigo = codigo;
-        strcpy(produto.descricao, "Teste");
+        int codigo = rand() % 10 + 1; // Número aleatório entre 1 e 10
+        TProduto produto = produto_inicializar(); // Inicializa produto
+        produto.codigo = codigo; // Coloca o código aleatório
+        sprintf(produto.descricao, "Produto de Codigo #%d", codigo);
         produto.valor = 10.50;
 
         lista_produtos_adicionar(&listaProdutos, produto);
@@ -164,13 +186,13 @@ int main(void) {
 
     TProduto* produto = lista_produtos_pesquisar_por_codigo(&listaProdutos, 5);
     if (produto) {
-        printf("\n!-------------------------\n");
-        printf("\n\nProduto encontrado!\n\n");
+        pseparador();
+        ptitulo("Produto encontrado!");
         strcpy(produto->descricao, "Produto encontrado!");
         produto_exibir(*produto);
-        printf("\n!-------------------------\n");
+        pseparador();
     } else {
-        printf("\n\nProduto não encontrado.\n\n");
+        ptitulo("Produto não encontrado!");
     }
 
     lista_produtos_exibir(listaProdutos);
