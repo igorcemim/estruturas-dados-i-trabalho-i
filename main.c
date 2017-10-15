@@ -46,7 +46,7 @@ TCliente cliente_inicializar() {
 }
 
 TCliente cliente_criar() {
-    TCliente cliente=cliente_inicializar();
+    TCliente cliente = cliente_inicializar();
 
     printf("Informe seu CPF:\n");
     scanf(" %s", cliente.cpf);
@@ -146,7 +146,6 @@ void lista_produtos_adicionar(TListaProdutos* listaProdutos, TProduto produto) {
     }
 }
 
-
 int main(void) {
     TListaProdutos listaProdutos = lista_produtos_inicializar();
     srand(time(NULL)); // Seed para números pseudo-aleatórios
@@ -165,9 +164,11 @@ int main(void) {
 
     TProduto* produto = lista_produtos_pesquisar_por_codigo(&listaProdutos, 5);
     if (produto) {
+        printf("\n!-------------------------\n");
         printf("\n\nProduto encontrado!\n\n");
         strcpy(produto->descricao, "Produto encontrado!");
         produto_exibir(*produto);
+        printf("\n!-------------------------\n");
     } else {
         printf("\n\nProduto não encontrado.\n\n");
     }
