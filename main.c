@@ -109,13 +109,14 @@ TProduto produto_inicializar() {
     return produto;
 }
 
-TProduto produto_criar() {
-    TProduto produto=produto_inicializar();
-
+TProduto produto_criar(TProduto produto) {
     ptitulo("Cadastro de Produto");
 
-    printf("\nInforme o código:\n");
-    scanf(" %d", &produto.codigo);
+    if (produto.codigo == 0) {
+        printf("\nInforme o código:\n");
+        scanf(" %d", &produto.codigo);
+    }
+
     printf("\nInforme a descrição:\n");
     scanf(" %s", produto.descricao);
     printf("\nInforme o valor:\n");
@@ -190,7 +191,7 @@ bool lista_clientes_remover(TListaClientes* listaClientes, int posicaoRemover) {
         return false;
     }
 
-    for(int i = posicaoRemover; i < listaClientes->fim; i++) {
+    for (int i = posicaoRemover; i < listaClientes->fim; i++) {
         listaClientes->clientes[i] = listaClientes->clientes[i + 1];
     }
     listaClientes->fim--;
@@ -216,18 +217,14 @@ int lista_produtos_pesquisar_posicao_por_codigo(TListaProdutos* listaProdutos, i
 }
 
 void lista_produtos_exibir(TListaProdutos listaProdutos) {
-    ptitulo("Lista de Produtos");
-
     if (listaProdutos.fim > 0) {
 
         for (int i = 0; i < listaProdutos.fim; i++) {
-            pseparador();
             produto_exibir(listaProdutos.produtos[i]);
         }
     } else {
-        printf("Nenhum produto cadastrado.\n\n");
+        printf("\nNenhum produto cadastrado.\n");
     }
-    pseparador();
 }
 
 bool lista_produtos_adicionar(TListaProdutos* listaProdutos, TProduto produto) {
@@ -268,10 +265,12 @@ bool lista_produtos_remover(TListaProdutos* listaProdutos, int posicaoRemover) {
 }
 
 void menu_loop() {
-    char cpf[11];
+    char cpf[12];
     int operacao;
     int posicao;
+    int codigo;
     TCliente cliente;
+    TProduto produto;
     TListaClientes listaClientes;
     TListaProdutos listaProdutos;
 
@@ -296,7 +295,7 @@ void menu_loop() {
 
         printf("11 - Atender cliente \n\n");
         printf("12 - Relatório: Vendas por cliente \n");
-        printf("13 - Relatório: Total do Dia \n\n");
+        printf("13 - Relatório: Total do Dia \n");
         printf("14 - Relatório: Produtos Vendidos \n\n");
 
         printf("0 - Sair\n");
@@ -315,13 +314,13 @@ void menu_loop() {
 
             case 2:
 
-                ptitulo("Alterar de Cliente");
+                ptitulo("Alterar Cliente");
                 printf("\nInforme o CPF do cliente:\n");
                 scanf(" %[0-9]11s", cpf);
                 posicao = lista_clientes_pesquisar_posicao_por_cpf(&listaClientes, cpf);
 
                 if (posicao != SEM_RESULTADO) {
-                    printf("\nCliente encontrado, informe os novos dados do cliente.\n");
+                    printf("\nCliente encontrado, informe os novos dados.\n");
                     /**
                      * Guarda o cliente na memória.
                      */
@@ -363,6 +362,74 @@ void menu_loop() {
 
                 ptitulo("Lista de Clientes");
                 lista_clientes_exibir(listaClientes);
+
+                pseparador();
+                break;
+                
+            case 5:
+
+                ptitulo("Pesquisar Cliente");
+                scanf(" %[0-9]11s", cpf);
+                posicao = lista_clientes_pesquisar_posicao_por_cpf(&listaClientes, cpf);
+
+                if (posicao != SEM_RESULTADO) {
+                    cliente_exibir(listaClientes.clientes[posicao]);
+                } else {
+                    printf("\nCliente não encontrado.\n");
+                }
+                        
+                pseparador();
+                break;
+                
+            case 6:
+
+                produto = produto_criar(produto_inicializar());
+                lista_produtos_adicionar(&listaProdutos, produto);
+                printf("\nProduto cadastrado.\n");
+
+                pseparador();
+                break;
+                
+            case 7:
+
+                ptitulo("Alterar Produto");
+                printf("\nInforme o código do produto:\n");
+                scanf(" %d", &codigo);
+                posicao = lista_produtos_pesquisar_posicao_por_codigo(&listaProdutos, codigo);
+
+                if (posicao != SEM_RESULTADO) {
+                    printf("\nProduto encontrado, informe os novos dados.\n");
+                    produto = produto_criar(listaProdutos.produtos[posicao]);
+                    lista_produtos_remover(&listaProdutos, posicao);
+                    lista_produtos_adicionar(&listaProdutos, produto);
+                    printf("\nProduto alterado.\n");
+                } else {
+                    printf("\nProduto não encontrado.\n");
+                }
+
+                pseparador();
+                break;
+                
+            case 9:
+                
+                ptitulo("Lista de Produtos");
+                lista_produtos_exibir(listaProdutos);
+
+                pseparador();
+                break;
+            
+            case 10:
+
+                ptitulo("Pesquisar Produto");
+                printf("\nInforme o código do produto:\n");
+                scanf(" %d", &codigo);
+                posicao = lista_produtos_pesquisar_posicao_por_codigo(&listaProdutos, codigo);
+
+                if (posicao != SEM_RESULTADO) {
+                    produto_exibir(listaProdutos.produtos[posicao]);
+                } else {
+                    printf("\nProduto não encontrado.\n");
+                }
 
                 pseparador();
                 break;
