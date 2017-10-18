@@ -264,6 +264,48 @@ bool lista_produtos_remover(TListaProdutos* listaProdutos, int posicaoRemover) {
     return true;
 }
 
+void menu_atendimento_loop() {
+    int opcao;
+
+    do {
+        system("clear");
+        ptitulo("Atendimento");
+        
+        // Validar se atendimento foi iniciado antes de executar operações
+        
+        /**
+         * Pesquisa um cliente, para ser atendido
+         */
+        printf("1 - Iniciar atendimento \n");
+        /**
+         * Adiciona produto na pilha
+         */
+        printf("2 - Adicionar produto \n");
+        /**
+         * Remove um produto da pilha
+         */
+        printf("3 - Remover produto \n");
+        /**
+         * Totaliza pedido no registro do cliente, limpa a pilha de produtos e exibe os valores em tela
+         */
+        printf("0 - Finalizar atendimento \n");
+        scanf(" %d", &opcao);
+        
+        switch (opcao) {
+            
+            case 0:
+                break;
+
+            default:
+                printf("\nOpção inválida.\n");
+
+        }
+        if (opcao != 0) {
+            system("echo 'Pressione ENTER para voltar ao menu.'; read x");
+        }
+    } while (opcao != 0);
+}
+
 void menu_loop() {
     char cpf[12];
     int operacao;
@@ -411,7 +453,7 @@ void menu_loop() {
                 break;
                 
             case 9:
-                
+
                 ptitulo("Lista de Produtos");
                 lista_produtos_exibir(listaProdutos);
 
@@ -432,6 +474,12 @@ void menu_loop() {
                 }
 
                 pseparador();
+                break;
+
+            case 11:
+                
+                menu_atendimento_loop();
+                
                 break;
 
             case 0:
