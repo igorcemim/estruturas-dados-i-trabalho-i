@@ -12,6 +12,7 @@ typedef struct {
     char endereco[50];
     char telefone[20];
     char cpf[12];
+    float totalCompras;
 } TCliente;
 
 typedef struct {
@@ -36,19 +37,23 @@ typedef struct {
     TProduto produtos[MAX];
 } TAtendimento;
 
-TListaClientes listaClientes;
-TListaProdutos listaProdutos;
-
-void ptitulo(char* message) {
-    printf("\n\n## %s\n\n", message);
-}
-
-void psubtitulo(char* message) {
-    printf("\n\n### %s\n\n", message);
-}
+typedef struct {
+    float total;
+    TListaProdutos produtosVendidos;
+} TCaixa;
 
 void pseparador() {
     printf("\n----------------------------\n");
+}
+
+void ptitulo(char* message) {
+    pseparador();
+    printf("\n %s\n", message);
+    pseparador();
+}
+
+void psubtitulo(char* message) {
+    printf("\n# %s\n", message);
 }
 
 TCliente cliente_inicializar() {
@@ -58,31 +63,35 @@ TCliente cliente_inicializar() {
     strcpy(cliente.endereco, "");
     strcpy(cliente.telefone, "");
     strcpy(cliente.cpf, "");
+    cliente.totalCompras = 0;
 
     return cliente;
 }
 
-TCliente cliente_criar() {
-    pseparador();
-    TCliente cliente = cliente_inicializar();
+TCliente cliente_criar(TCliente cliente) {
+    ptitulo("Cadastro de Cliente");
 
-    ptitulo("Cliente");
+    /**
+     * Não pede o CPF na alteração.
+     */
+    if (strcmp(cliente.cpf, "") == 0) {
+        printf("\nInforme o CPF: \n");
+        scanf(" %[0-9]11s", cliente.cpf);
+    }
 
-    printf("Informe seu CPF: \n");
-    scanf(" %11s", cliente.cpf);
-    printf("Informe seu nome: \n");
-    scanf(" %49s", cliente.nome);
-    printf("Informe seu endereço: \n");
-    scanf(" %49s", cliente.endereco);
-    printf("Informe seu telefone: \n");
-    scanf(" %19s", cliente.telefone);
+    printf("\nInforme o nome: \n");
+    scanf(" %[^\n]49s", cliente.nome);
+    printf("\nInforme o endereço: \n");
+    scanf(" %[^\n]49s", cliente.endereco);
+    printf("\nInforme o telefone: \n");
+    scanf(" %[0-9 .-]19s", cliente.telefone);
     pseparador();
 
     return cliente;
 }
 
 void cliente_exibir(TCliente cliente) {
-    ptitulo("Cliente");
+    ptitulo("Informações do Cliente");
 
     printf("CPF: %s \n", cliente.cpf);
     printf("Nome: %s \n", cliente.nome);
@@ -101,24 +110,23 @@ TProduto produto_inicializar() {
 }
 
 TProduto produto_criar() {
-    pseparador();
     TProduto produto=produto_inicializar();
 
-    ptitulo("Produto");
+    ptitulo("Cadastro de Produto");
 
-    printf("Informe o código:\n");
-    scanf("%d", &produto.codigo);
-    printf("Informe a descrição:\n");
-    scanf("%s", produto.descricao);
-    printf("Informe o valor:\n");
-    scanf("%f", &produto.valor);
+    printf("\nInforme o código:\n");
+    scanf(" %d", &produto.codigo);
+    printf("\nInforme a descrição:\n");
+    scanf(" %s", produto.descricao);
+    printf("\nInforme o valor:\n");
+    scanf(" %f", &produto.valor);
     pseparador();
 
     return produto;
 }
 
 void produto_exibir(TProduto produto) {
-    ptitulo("Produto");
+    ptitulo("Informações do Produto");
 
     printf("Código: %d\n", produto.codigo);
     printf("Descrição: %s\n", produto.descricao);
@@ -143,19 +151,14 @@ int lista_clientes_pesquisar_posicao_por_cpf(TListaClientes* listaClientes, char
 }
 
 void lista_clientes_exibir(TListaClientes listaClientes){
-    pseparador();
-    ptitulo("Clientes");
-
     if (listaClientes.fim > 0) {
 
         for (int i = 0; i < listaClientes.fim; i++){
-            pseparador();
             cliente_exibir(listaClientes.clientes[i]);
         }
     } else {
-        printf("Nenhum cliente cadastrado.\n\n");
+        printf("\nNenhum cliente cadastrado.\n");
     }
-    pseparador();
 }
 
 bool lista_clientes_adicionar(TListaClientes* listaClientes, TCliente cliente) {
@@ -213,8 +216,7 @@ int lista_produtos_pesquisar_posicao_por_codigo(TListaProdutos* listaProdutos, i
 }
 
 void lista_produtos_exibir(TListaProdutos listaProdutos) {
-    pseparador();
-    ptitulo("Produtos");
+    ptitulo("Lista de Produtos");
 
     if (listaProdutos.fim > 0) {
 
@@ -265,71 +267,120 @@ bool lista_produtos_remover(TListaProdutos* listaProdutos, int posicaoRemover) {
     return true;
 }
 
-void menu() {
+void menu_loop() {
     char cpf[11];
-    int operacao, posicao;
+    int operacao;
+    int posicao;
     TCliente cliente;
+    TListaClientes listaClientes;
+    TListaProdutos listaProdutos;
+
+    listaProdutos = lista_produtos_inicializar();
+    listaClientes = lista_clientes_inicializar();
 
     do {
-        printf("1 - Cliente: Cadastrar \n");
-        printf("2 - Cliente: Alterar \n");
-        printf("3 - Cliente: Remover \n");
-        printf("4 - Cliente: Listar \n");
-        printf("5 - Cliente: Pesquisar \n");
-        printf("6 - Produto: Cadastrar \n");
-        printf("7 - Produto: Alterar \n");
-        printf("8 - Produto: Remover \n");
-        printf("9 - Produto: Listar \n");
-        printf("10 - Produto: Pesquisar \n");
+        system("clear");
+        ptitulo("Operações do Sistema");
+
+        printf(" 1 - Cliente: Cadastrar \n");
+        printf(" 2 - Cliente: Alterar \n");
+        printf(" 3 - Cliente: Remover \n");
+        printf(" 4 - Cliente: Lista \n");
+        printf(" 5 - Cliente: Pesquisar \n\n");
+
+        printf(" 6 - Produto: Cadastrar \n");
+        printf(" 7 - Produto: Alterar \n");
+        printf(" 8 - Produto: Remover \n");
+        printf(" 9 - Produto: Lista \n");
+        printf("10 - Produto: Pesquisar \n\n");
+
+        printf("11 - Atender cliente \n\n");
+        printf("12 - Relatório: Vendas por cliente \n");
+        printf("13 - Relatório: Total do Dia \n\n");
+        printf("14 - Relatório: Produtos Vendidos \n\n");
+
         printf("0 - Sair\n");
         scanf(" %d", &operacao);
 
         switch (operacao) {
 
             case 1:
-                cliente = cliente_criar();
+
+                cliente = cliente_criar(cliente_inicializar());
                 lista_clientes_adicionar(&listaClientes, cliente);
+                printf("\nCliente cadastrado.\n");
+
+                pseparador();
                 break;
 
             case 2:
-                printf("Informe o CPF do cliente:\n");
-                scanf(" %s", cpf);
+
+                ptitulo("Alterar de Cliente");
+                printf("\nInforme o CPF do cliente:\n");
+                scanf(" %[0-9]11s", cpf);
                 posicao = lista_clientes_pesquisar_posicao_por_cpf(&listaClientes, cpf);
+
                 if (posicao != SEM_RESULTADO) {
+                    printf("\nCliente encontrado, informe os novos dados do cliente.\n");
+                    /**
+                     * Guarda o cliente na memória.
+                     */
+                    cliente = cliente_criar(listaClientes.clientes[posicao]);
+                    /**
+                     * Remove o cliente da lista...
+                     */
                     lista_clientes_remover(&listaClientes, posicao);
-                    cliente = cliente_criar();
+                    /**
+                     * E adiciona o objeto alterado na lista.
+                     */
                     lista_clientes_adicionar(&listaClientes, cliente);
-                    printf("Cliente removido.\n");
+                    printf("\nCliente alterado.\n");
                 } else {
-                    printf("Cliente não encontrado.\n");
+                    printf("\nCliente não encontrado.\n");
                 }
+
+                pseparador();
                 break;
 
             case 3:
-                printf("Informe o CPF do cliente:\n");
-                scanf(" %s", cpf);
+
+                ptitulo("Remover Cliente");
+                printf("\nInforme o CPF do cliente:\n");
+                scanf(" %[0-9]11s", cpf);
                 posicao = lista_clientes_pesquisar_posicao_por_cpf(&listaClientes, cpf);
+
                 if (posicao != SEM_RESULTADO) {
                     lista_clientes_remover(&listaClientes, posicao);
-                    printf("Cliente removido.\n");
+                    printf("\nCliente removido.\n");
                 } else {
-                    printf("Cliente não encontrado.\n");
+                    printf("\nCliente não encontrado.\n");
                 }
+
+                pseparador();
                 break;
 
             case 4:
+
+                ptitulo("Lista de Clientes");
                 lista_clientes_exibir(listaClientes);
+
+                pseparador();
                 break;
+
+            case 0:
+                break;
+
+            default:
+
+                printf("\nA opção informada é inválida.\n\n");
+        }
+        if (operacao != 0) {
+            system("echo 'Pressione ENTER para voltar ao menu.'; read x");
         }
     } while (operacao != 0);
 }
 
 int main(void) {
-
-    listaProdutos = lista_produtos_inicializar();
-    listaClientes = lista_clientes_inicializar();
-
-    menu();
-
+    menu_loop();
     return (EXIT_SUCCESS);
 }
