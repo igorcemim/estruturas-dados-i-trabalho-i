@@ -1,268 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <stdbool.h>
+#include "lib/common.h"
+#include "lib/pprint.h"
+#include "lib/produto.h"
+#include "lib/cliente.h"
 
-#define MAX 100
-#define SEM_RESULTADO -1
-
-typedef struct {
-    char nome[50];
-    char endereco[50];
-    char telefone[20];
-    char cpf[12];
-    float totalCompras;
-} TCliente;
-
-typedef struct {
-    int codigo;
-    char descricao[50];
-    float valor;
-} TProduto;
-
-typedef struct {
-    int fim;
-    TCliente clientes[MAX];
-} TListaClientes;
-
-typedef struct {
-    int fim;
-    TProduto produtos[MAX];
-} TListaProdutos;
-
-typedef struct {
+typedef struct SAtendimento {
     TCliente cliente;
     int fim;
     TProduto produtos[MAX];
 } TAtendimento;
 
-typedef struct {
+typedef struct SCaixa {
     float total;
     TListaProdutos produtosVendidos;
 } TCaixa;
-
-void pseparador() {
-    printf("\n----------------------------\n");
-}
-
-void ptitulo(char* message) {
-    pseparador();
-    printf("\n %s\n", message);
-    pseparador();
-}
-
-void psubtitulo(char* message) {
-    printf("\n# %s\n", message);
-}
-
-TCliente cliente_inicializar() {
-    TCliente cliente;
-
-    strcpy(cliente.nome, "");
-    strcpy(cliente.endereco, "");
-    strcpy(cliente.telefone, "");
-    strcpy(cliente.cpf, "");
-    cliente.totalCompras = 0;
-
-    return cliente;
-}
-
-TCliente cliente_criar(TCliente cliente) {
-    ptitulo("Cadastro de Cliente");
-
-    /**
-     * Não pede o CPF na alteração.
-     */
-    if (strcmp(cliente.cpf, "") == 0) {
-        printf("\nInforme o CPF: \n");
-        scanf(" %[0-9]11s", cliente.cpf);
-    }
-
-    printf("\nInforme o nome: \n");
-    scanf(" %[^\n]49s", cliente.nome);
-    printf("\nInforme o endereço: \n");
-    scanf(" %[^\n]49s", cliente.endereco);
-    printf("\nInforme o telefone: \n");
-    scanf(" %[0-9 .-]19s", cliente.telefone);
-    pseparador();
-
-    return cliente;
-}
-
-void cliente_exibir(TCliente cliente) {
-    ptitulo("Informações do Cliente");
-
-    printf("CPF: %s \n", cliente.cpf);
-    printf("Nome: %s \n", cliente.nome);
-    printf("Endereço: %s \n", cliente.endereco);
-    printf("Telefone: %s \n", cliente.telefone);
-}
-
-TProduto produto_inicializar() {
-    TProduto produto;
-
-    produto.codigo = 0;
-    strcpy(produto.descricao, "");
-    produto.valor = 0;
-
-    return produto;
-}
-
-TProduto produto_criar(TProduto produto) {
-    ptitulo("Cadastro de Produto");
-
-    if (produto.codigo == 0) {
-        printf("\nInforme o código:\n");
-        scanf(" %d", &produto.codigo);
-    }
-
-    printf("\nInforme a descrição:\n");
-    scanf(" %s", produto.descricao);
-    printf("\nInforme o valor:\n");
-    scanf(" %f", &produto.valor);
-    pseparador();
-
-    return produto;
-}
-
-void produto_exibir(TProduto produto) {
-    ptitulo("Informações do Produto");
-
-    printf("Código: %d\n", produto.codigo);
-    printf("Descrição: %s\n", produto.descricao);
-    printf("Valor: %.2f\n", produto.valor);
-}
-
-TListaClientes lista_clientes_inicializar() {
-    TListaClientes listaClientes;
-    listaClientes.fim = 0;
-
-    return listaClientes;
-}
-
-int lista_clientes_pesquisar_posicao_por_cpf(TListaClientes* listaClientes, char* cpf) {
-    for (int i = 0; i < listaClientes->fim; i++) {
-        if (strcmp(listaClientes->clientes[i].cpf, cpf) == 0) {
-            return i;
-        }
-    }
-
-    return SEM_RESULTADO;
-}
-
-void lista_clientes_exibir(TListaClientes listaClientes){
-    if (listaClientes.fim > 0) {
-
-        for (int i = 0; i < listaClientes.fim; i++){
-            cliente_exibir(listaClientes.clientes[i]);
-        }
-    } else {
-        printf("\nNenhum cliente cadastrado.\n");
-    }
-}
-
-bool lista_clientes_adicionar(TListaClientes* listaClientes, TCliente cliente) {
-    if (listaClientes->fim == MAX) {
-        return false;
-    }
-
-    int posicaoInsercao;
-
-    for (posicaoInsercao = 0; posicaoInsercao < listaClientes->fim; posicaoInsercao++) {
-        if(atoi(listaClientes->clientes[posicaoInsercao].cpf) > atoi(cliente.cpf))
-            break;
-    }
-
-    if (listaClientes->fim > 0) {
-        for(int i = listaClientes->fim; i > posicaoInsercao; i--){
-            listaClientes->clientes[i] = listaClientes->clientes[i - 1];
-        }
-    }
-
-    listaClientes->clientes[posicaoInsercao] = cliente;
-    listaClientes->fim++;
-
-    return true;
-}
-
-bool lista_clientes_remover(TListaClientes* listaClientes, int posicaoRemover) {
-    if(posicaoRemover >= listaClientes->fim){
-        return false;
-    }
-
-    for (int i = posicaoRemover; i < listaClientes->fim; i++) {
-        listaClientes->clientes[i] = listaClientes->clientes[i + 1];
-    }
-    listaClientes->fim--;
-
-    return true;
-}
-
-TListaProdutos lista_produtos_inicializar() {
-    TListaProdutos listaProdutos;
-    listaProdutos.fim = 0;
-
-    return listaProdutos;
-}
-
-int lista_produtos_pesquisar_posicao_por_codigo(TListaProdutos* listaProdutos, int codigo) {
-    for (int i = 0; i < listaProdutos->fim; i++) {
-        if (listaProdutos->produtos[i].codigo == codigo) {
-            return i;
-        }
-    }
-
-    return SEM_RESULTADO;
-}
-
-void lista_produtos_exibir(TListaProdutos listaProdutos) {
-    if (listaProdutos.fim > 0) {
-
-        for (int i = 0; i < listaProdutos.fim; i++) {
-            produto_exibir(listaProdutos.produtos[i]);
-        }
-    } else {
-        printf("\nNenhum produto cadastrado.\n");
-    }
-}
-
-bool lista_produtos_adicionar(TListaProdutos* listaProdutos, TProduto produto) {
-    if (listaProdutos->fim == MAX) {
-        return false;
-    }
-
-    int posicaoInsercao;
-
-    for (posicaoInsercao = 0; posicaoInsercao < listaProdutos->fim; posicaoInsercao++) {
-        if(listaProdutos->produtos[posicaoInsercao].codigo > produto.codigo)
-            break;
-    }
-
-    if (listaProdutos->fim > 0) {
-        for(int i = listaProdutos->fim; i > posicaoInsercao; i--){
-            listaProdutos->produtos[i] = listaProdutos->produtos[i - 1];
-        }
-    }
-
-    listaProdutos->produtos[posicaoInsercao] = produto;
-    listaProdutos->fim++;
-
-    return true;
-}
-
-bool lista_produtos_remover(TListaProdutos* listaProdutos, int posicaoRemover) {
-    if(posicaoRemover >= listaProdutos->fim){
-        return false;
-    }
-
-    for(int i = posicaoRemover; i < listaProdutos->fim; i++) {
-        listaProdutos->produtos[i] = listaProdutos->produtos[i + 1];
-    }
-    listaProdutos->fim--;
-
-    return true;
-}
 
 void menu_atendimento_loop() {
     int opcao;
@@ -270,9 +24,9 @@ void menu_atendimento_loop() {
     do {
         system("clear");
         ptitulo("Atendimento");
-        
+
         // Validar se atendimento foi iniciado antes de executar operações
-        
+
         /**
          * Pesquisa um cliente, para ser atendido
          */
@@ -290,9 +44,9 @@ void menu_atendimento_loop() {
          */
         printf("0 - Finalizar atendimento \n");
         scanf(" %d", &opcao);
-        
+
         switch (opcao) {
-            
+
             case 0:
                 break;
 
@@ -407,7 +161,7 @@ void menu_loop() {
 
                 pseparador();
                 break;
-                
+
             case 5:
 
                 ptitulo("Pesquisar Cliente");
@@ -419,10 +173,10 @@ void menu_loop() {
                 } else {
                     printf("\nCliente não encontrado.\n");
                 }
-                        
+
                 pseparador();
                 break;
-                
+
             case 6:
 
                 produto = produto_criar(produto_inicializar());
@@ -431,7 +185,7 @@ void menu_loop() {
 
                 pseparador();
                 break;
-                
+
             case 7:
 
                 ptitulo("Alterar Produto");
@@ -451,7 +205,7 @@ void menu_loop() {
 
                 pseparador();
                 break;
-                
+
             case 9:
 
                 ptitulo("Lista de Produtos");
@@ -459,7 +213,7 @@ void menu_loop() {
 
                 pseparador();
                 break;
-            
+
             case 10:
 
                 ptitulo("Pesquisar Produto");
@@ -477,9 +231,8 @@ void menu_loop() {
                 break;
 
             case 11:
-                
+
                 menu_atendimento_loop();
-                
                 break;
 
             case 0:
