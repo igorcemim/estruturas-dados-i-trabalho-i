@@ -46,7 +46,7 @@ TListaProdutos lista_produtos_inicializar() {
     return listaProdutos;
 }
 
-int lista_produtos_pesquisar_posicao_por_codigo(TListaProdutos* listaProdutos, int codigo) {
+int lista_produtos_pesquisar_posicao_por_codigo(TListaProdutos *listaProdutos, int codigo) {
     for (int i = 0; i < listaProdutos->fim; i++) {
         if (listaProdutos->produtos[i].codigo == codigo) {
             return i;
@@ -67,7 +67,7 @@ void lista_produtos_exibir(TListaProdutos listaProdutos) {
     }
 }
 
-bool lista_produtos_adicionar(TListaProdutos* listaProdutos, TProduto produto) {
+bool lista_produtos_adicionar(TListaProdutos *listaProdutos, TProduto produto) {
     if (listaProdutos->fim == MAX) {
         return false;
     }
@@ -91,7 +91,7 @@ bool lista_produtos_adicionar(TListaProdutos* listaProdutos, TProduto produto) {
     return true;
 }
 
-bool lista_produtos_remover(TListaProdutos* listaProdutos, int posicaoRemover) {
+bool lista_produtos_remover(TListaProdutos *listaProdutos, int posicaoRemover) {
     if(posicaoRemover >= listaProdutos->fim){
         return false;
     }

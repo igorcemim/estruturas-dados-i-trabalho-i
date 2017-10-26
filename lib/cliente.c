@@ -56,7 +56,7 @@ TListaClientes lista_clientes_inicializar() {
     return listaClientes;
 }
 
-int lista_clientes_pesquisar_posicao_por_cpf(TListaClientes* listaClientes, char* cpf) {
+int lista_clientes_pesquisar_posicao_por_cpf(TListaClientes *listaClientes, char* cpf) {
     for (int i = 0; i < listaClientes->fim; i++) {
         if (strcmp(listaClientes->clientes[i].cpf, cpf) == 0) {
             return i;
@@ -76,7 +76,7 @@ void lista_clientes_exibir(TListaClientes listaClientes) {
     }
 }
 
-bool lista_clientes_adicionar(TListaClientes* listaClientes, TCliente cliente) {
+bool lista_clientes_adicionar(TListaClientes *listaClientes, TCliente cliente) {
     if (listaClientes->fim == MAX) {
         return false;
     }
@@ -100,7 +100,7 @@ bool lista_clientes_adicionar(TListaClientes* listaClientes, TCliente cliente) {
     return true;
 }
 
-bool lista_clientes_remover(TListaClientes* listaClientes, int posicaoRemover) {
+bool lista_clientes_remover(TListaClientes *listaClientes, int posicaoRemover) {
     if(posicaoRemover >= listaClientes->fim){
         return false;
     }
