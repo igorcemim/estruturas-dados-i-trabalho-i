@@ -18,27 +18,45 @@ typedef struct SCaixa {
     TListaProdutos produtosVendidos;
 } TCaixa;
 
-void menu_atendimento_loop() {
+void menu_atendimento_loop(TListaClientes *listaClientes, TListaProdutos *listaProdutos) {
+    char cpf[12];
+    char opcaoCliente;
     int opcao;
+    int posicao;
+    TCliente cliente;
+
+    do {
+
+        system("clear");
+        ptitulo("Pesquisar Cliente para Atendimento");
+        printf("\nInforme o CPF do cliente:\n");
+        scanf(" %[0-9]11s", cpf);
+        posicao = lista_clientes_pesquisar_posicao_por_cpf(listaClientes, cpf);
+        opcaoCliente = 'n';
+
+        if (posicao != SEM_RESULTADO) {
+            cliente = listaClientes->clientes[posicao];
+        } else {
+            printf("\nCliente não encontrado. Deseja tentar novamente (digite s)?\n");
+            scanf(" %c", &opcaoCliente);
+            if (opcaoCliente != 's') {
+                return;
+            }
+        }
+    } while (posicao == SEM_RESULTADO && opcaoCliente == 's');
 
     do {
         system("clear");
-        ptitulo("Atendimento");
+        ptitulo("Atendimento de Cliente");
 
-        // Validar se atendimento foi iniciado antes de executar operações
-
-        /**
-         * Pesquisa um cliente, para ser atendido
-         */
-        printf("1 - Iniciar atendimento \n");
         /**
          * Adiciona produto na pilha
          */
-        printf("2 - Adicionar produto \n");
+        printf("1 - Adicionar produto \n");
         /**
          * Remove um produto da pilha
          */
-        printf("3 - Remover produto \n");
+        printf("2 - Remover produto \n");
         /**
          * Totaliza pedido no registro do cliente, limpa a pilha de produtos e exibe os valores em tela
          */
@@ -232,7 +250,7 @@ void menu_loop() {
 
             case 11:
 
-                menu_atendimento_loop();
+                menu_atendimento_loop(&listaClientes, &listaProdutos);
                 break;
 
             case 0:
