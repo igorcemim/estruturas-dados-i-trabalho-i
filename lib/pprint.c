@@ -10,7 +10,3 @@ void ptitulo(char* message) {
     printf("\n %s\n", message);
     pseparador();
 }
-
-void psubtitulo(char* message) {
-    printf("\n# %s\n", message);
-}
