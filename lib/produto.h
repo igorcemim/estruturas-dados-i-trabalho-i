@@ -5,6 +5,7 @@ typedef struct SProduto {
     int codigo;
     char descricao[50];
     float valor;
+    float totalVendas;
 } TProduto;
 
 typedef struct SListaProdutos {

@@ -8,22 +8,76 @@
 #include "lib/cliente.h"
 
 typedef struct SAtendimento {
-    TCliente cliente;
-    int fim;
-    TProduto produtos[MAX];
+    int codigoCliente;
+    int topo;
+    int produtos[MAX]; // Códigos dos produtos
 } TAtendimento;
 
 typedef struct SCaixa {
     float total;
-    TListaProdutos produtosVendidos;
 } TCaixa;
+
+TAtendimento atendimento_inicializar() {
+    TAtendimento atendimento;
+    atendimento.topo = 0;
+    return atendimento;
+}
+
+void atendimento_pop(TAtendimento *atendimento) {
+    atendimento->produtos[atendimento->topo - 1] = 0;
+    atendimento->topo--;
+}
+
+void atendimento_push(TAtendimento *atendimento, int codigoProduto) {
+    atendimento->produtos[atendimento->topo] = codigoProduto;
+    atendimento->topo++;
+}
+
+void atendimento_exibir(TAtendimento atendimento, TListaProdutos listaProdutos) {
+    TProduto produto;
+    int posicao;
+    float totalAtendimento = 0;
+
+    for (int i = atendimento.topo - 1; i >= 0; i--) {
+        posicao = lista_produtos_pesquisar_posicao_por_codigo(&listaProdutos, atendimento.produtos[i]);
+        produto = listaProdutos.produtos[posicao];
+        totalAtendimento += produto.valor;
+        produto_exibir(produto);
+        pseparador();
+    }
+    printf("\n\nTotal em compras: %f\n\n", totalAtendimento);
+}
+
+void caixa_contabilizar_atendimento(
+    TCaixa *caixa,
+    TListaProdutos *listaProdutos,
+    TListaClientes *listaClientes,
+    TAtendimento atendimento
+) {
+    int codigoProduto;
+    int codigoCliente;
+    float totalAtendimento;
+    TProduto produto;
+
+    for (int i = atendimento.topo - 1; i >= 0; i--) {
+        codigoProduto = atendimento.produtos[i];
+        produto = listaProdutos->produtos[codigoProduto];
+
+        listaProdutos->produtos[codigoProduto].totalVendas += produto.valor;
+        totalAtendimento += produto.valor;
+    }
+    listaClientes->clientes[codigoCliente].totalCompras += totalAtendimento;
+    caixa->total += totalAtendimento;
+}
 
 void menu_atendimento_loop(TListaClientes *listaClientes, TListaProdutos *listaProdutos) {
     char cpf[12];
     char opcaoCliente;
     int opcao;
+    int codigo;
     int posicao;
     TCliente cliente;
+    TAtendimento atendimento;
 
     do {
 
@@ -34,16 +88,27 @@ void menu_atendimento_loop(TListaClientes *listaClientes, TListaProdutos *listaP
         posicao = lista_clientes_pesquisar_posicao_por_cpf(listaClientes, cpf);
         opcaoCliente = 'n';
 
-        if (posicao != SEM_RESULTADO) {
-            cliente = listaClientes->clientes[posicao];
-        } else {
+        /**
+         * Se não encontrou resultado pergunta se o usuário deseja tentar procurar novamente.
+         */
+        if (posicao == SEM_RESULTADO) {
             printf("\nCliente não encontrado. Deseja tentar novamente (digite s)?\n");
             scanf(" %c", &opcaoCliente);
+            /**
+             * Caso negativo retorna ao menu inicial..
+             */
             if (opcaoCliente != 's') {
                 return;
             }
         }
+
+    /**
+     * Enquanto não houver resultado e o usuário desejar procurar um cliente.
+     */
     } while (posicao == SEM_RESULTADO && opcaoCliente == 's');
+
+    atendimento = atendimento_inicializar();
+    atendimento.codigoCliente = posicao;
 
     do {
         system("clear");
@@ -52,20 +117,61 @@ void menu_atendimento_loop(TListaClientes *listaClientes, TListaProdutos *listaP
         /**
          * Adiciona produto na pilha
          */
-        printf("1 - Adicionar produto \n");
+        printf("1 - Adicionar produto na pilha \n");
         /**
          * Remove um produto da pilha
          */
-        printf("2 - Remover produto \n");
+        printf("2 - Remover produto da pilha \n");
+        /**
+         * Listar produtos
+         */
+        printf("3 - Mostrar produtos no atendimento \n");
+        /**
+         * Fechar atendimento
+         */
+        printf("4 - Fechar atendimento \n");
         /**
          * Totaliza pedido no registro do cliente, limpa a pilha de produtos e exibe os valores em tela
          */
-        printf("0 - Finalizar atendimento \n");
+        printf("0 - Cancelar atendimento \n");
         scanf(" %d", &opcao);
 
         switch (opcao) {
 
             case 0:
+                break;
+
+            case 1:
+                ptitulo("Adicionar produto na pilha");
+                printf("\nInforme o código do produto:\n");
+                scanf(" %d", &codigo);
+                posicao = lista_produtos_pesquisar_posicao_por_codigo(listaProdutos, codigo);
+
+                if (posicao != SEM_RESULTADO) {
+                    atendimento_push(&atendimento, listaProdutos->produtos[posicao].codigo);
+                } else {
+                    printf("\nProduto não encontrado.\n");
+                }
+
+                pseparador();
+                break;
+
+            case 2:
+                ptitulo("Remover produto da pilha");
+                atendimento_pop(&atendimento);
+                printf("\nProduto no topo da pilha removido do atendimento.\n");
+                pseparador();
+                break;
+
+            case 3:
+                ptitulo("Mostrar produtos na pilha");
+                if (atendimento.topo == 0) {
+                    printf("\nNenhum produto foi adicionado ao atendimento.\n");
+                } else {
+                    atendimento_exibir(atendimento, *listaProdutos);
+                }
+
+                pseparador();
                 break;
 
             default:
@@ -95,22 +201,27 @@ void menu_loop() {
         system("clear");
         ptitulo("Operações do Sistema");
 
-        printf(" 1 - Cliente: Cadastrar \n");
-        printf(" 2 - Cliente: Alterar \n");
-        printf(" 3 - Cliente: Remover \n");
-        printf(" 4 - Cliente: Lista \n");
-        printf(" 5 - Cliente: Pesquisar \n\n");
+        printf("Cliente \n");
+        printf(" 1 - Cadastrar \n");
+        printf(" 2 - Alterar \n");
+        printf(" 3 - Remover \n");
+        printf(" 4 - Lista \n");
+        printf(" 5 - Pesquisar \n\n");
 
-        printf(" 6 - Produto: Cadastrar \n");
-        printf(" 7 - Produto: Alterar \n");
-        printf(" 8 - Produto: Remover \n");
-        printf(" 9 - Produto: Lista \n");
-        printf("10 - Produto: Pesquisar \n\n");
+        printf("Produto \n");
+        printf(" 6 - Cadastrar \n");
+        printf(" 7 - Alterar \n");
+        printf(" 8 - Remover \n");
+        printf(" 9 - Lista \n");
+        printf("10 - Pesquisar \n\n");
 
+        printf("Atendimento \n");
         printf("11 - Atender cliente \n\n");
-        printf("12 - Relatório: Vendas por cliente \n");
-        printf("13 - Relatório: Total do Dia \n");
-        printf("14 - Relatório: Produtos Vendidos \n\n");
+
+        printf("Caixa \n");
+        printf("12 - Vendas por cliente \n");
+        printf("13 - Vendas por produto \n");
+        printf("14 - Total em Vendas \n\n");
 
         printf("0 - Sair\n");
         scanf(" %d", &operacao);
