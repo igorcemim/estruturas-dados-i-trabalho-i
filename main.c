@@ -6,76 +6,15 @@
 #include "lib/pprint.h"
 #include "lib/produto.h"
 #include "lib/cliente.h"
+#include "lib/caixa.h"
 
-typedef struct SAtendimento {
-    int codigoCliente;
-    int topo;
-    int produtos[MAX]; // Códigos dos produtos
-} TAtendimento;
-
-typedef struct SCaixa {
-    float total;
-} TCaixa;
-
-TAtendimento atendimento_inicializar() {
-    TAtendimento atendimento;
-    atendimento.topo = 0;
-    return atendimento;
-}
-
-void atendimento_pop(TAtendimento *atendimento) {
-    atendimento->produtos[atendimento->topo - 1] = 0;
-    atendimento->topo--;
-}
-
-void atendimento_push(TAtendimento *atendimento, int codigoProduto) {
-    atendimento->produtos[atendimento->topo] = codigoProduto;
-    atendimento->topo++;
-}
-
-void atendimento_exibir(TAtendimento atendimento, TListaProdutos listaProdutos) {
-    TProduto produto;
-    int posicao;
-    float totalAtendimento = 0;
-
-    for (int i = atendimento.topo - 1; i >= 0; i--) {
-        posicao = lista_produtos_pesquisar_posicao_por_codigo(&listaProdutos, atendimento.produtos[i]);
-        produto = listaProdutos.produtos[posicao];
-        totalAtendimento += produto.valor;
-        produto_exibir(produto);
-        pseparador();
-    }
-    printf("\n\nTotal em compras: %f\n\n", totalAtendimento);
-}
-
-void caixa_contabilizar_atendimento(
-    TCaixa *caixa,
-    TListaProdutos *listaProdutos,
-    TListaClientes *listaClientes,
-    TAtendimento atendimento
-) {
-    int codigoProduto;
-    int codigoCliente;
-    float totalAtendimento;
-    TProduto produto;
-
-    for (int i = atendimento.topo - 1; i >= 0; i--) {
-        codigoProduto = atendimento.produtos[i];
-        produto = listaProdutos->produtos[codigoProduto];
-
-        listaProdutos->produtos[codigoProduto].totalVendas += produto.valor;
-        totalAtendimento += produto.valor;
-    }
-    listaClientes->clientes[codigoCliente].totalCompras += totalAtendimento;
-    caixa->total += totalAtendimento;
-}
-
-void menu_atendimento_loop(TListaClientes *listaClientes, TListaProdutos *listaProdutos) {
+void menu_atendimento_loop(TListaClientes *listaClientes, TListaProdutos *listaProdutos, TCaixa *caixa) {
     char cpf[12];
     char opcaoCliente;
     int opcao;
     int codigo;
     int posicao;
+    float totalAtendimento;
     TCliente cliente;
     TAtendimento atendimento;
 
@@ -125,7 +64,7 @@ void menu_atendimento_loop(TListaClientes *listaClientes, TListaProdutos *listaP
         /**
          * Listar produtos
          */
-        printf("3 - Mostrar produtos no atendimento \n");
+        printf("3 - Mostrar produtos na pilha \n");
         /**
          * Fechar atendimento
          */
@@ -174,6 +113,13 @@ void menu_atendimento_loop(TListaClientes *listaClientes, TListaProdutos *listaP
                 pseparador();
                 break;
 
+            case 4:
+                ptitulo("Fechar atendimento");
+                printf("\nAtendimento fechado.\n");
+                totalAtendimento = caixa_contabilizar_atendimento(caixa, listaProdutos, listaClientes, atendimento);
+                printf("\n\nTotal em compras: %.2f\n\n", totalAtendimento);
+                return;
+
             default:
                 printf("\nOpção inválida.\n");
 
@@ -191,13 +137,14 @@ void menu_loop() {
     int codigo;
     TCliente cliente;
     TProduto produto;
-    TListaClientes listaClientes;
-    TListaProdutos listaProdutos;
 
-    listaProdutos = lista_produtos_inicializar();
-    listaClientes = lista_clientes_inicializar();
+    TListaProdutos listaProdutos = lista_produtos_inicializar();
+    TListaClientes listaClientes = lista_clientes_inicializar();
+    TCaixa caixa = caixa_inicializar();
 
     do {
+        operacao = -1;
+
         system("clear");
         ptitulo("Operações do Sistema");
 
@@ -335,6 +282,23 @@ void menu_loop() {
                 pseparador();
                 break;
 
+            case 8:
+
+                ptitulo("Remover Produto");
+                printf("\nInforme o código do produto:\n");
+                scanf(" %d", &codigo);
+                posicao = lista_produtos_pesquisar_posicao_por_codigo(&listaProdutos, codigo);
+
+                if (posicao != SEM_RESULTADO) {
+                    lista_produtos_remover(&listaProdutos, posicao);
+                    printf("\nProduto removido.\n");
+                } else {
+                    printf("\nProduto não encontrado.\n");
+                }
+
+                pseparador();
+                break;
+
             case 9:
 
                 ptitulo("Lista de Produtos");
@@ -361,7 +325,7 @@ void menu_loop() {
 
             case 11:
 
-                menu_atendimento_loop(&listaClientes, &listaProdutos);
+                menu_atendimento_loop(&listaClientes, &listaProdutos, &caixa);
                 break;
 
             case 0:
